@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">幺久安卓源码</string>
+    <string name="string_to_be_processed">待处理呼叫</string>
+    <string name="string_finished">已完成</string>
+    <string name="user_center">个人中心</string>
+</resources>
