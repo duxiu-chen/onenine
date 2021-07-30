@@ -29,4 +29,13 @@ public interface CallService {
     @HTTP(method = "PUT", path = "/jeeplus/a/web/yjMahjongHallWaiters/completeCall", hasBody = true)
     Observable<BaseResponse> completeCall(@Body RequestBody body);
 
+
+    /**
+     * 服务生--响应呼叫请求
+     * @param body
+     * @return
+     */
+    @HTTP(method = "PUT", path = "/jeeplus/a/web/yjMahjongHallWaiters/responseCall", hasBody = true)
+    Observable<BaseResponse> responseCall(@Body RequestBody body);
+
 }

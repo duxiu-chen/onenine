@@ -40,6 +40,8 @@
         android:layout_marginLeft="32dp"
         android:layout_marginRight="32dp"
         android:hint="请输入手机号"
+        android:inputType="phone"
+        android:maxLength="11"
         android:drawableLeft="@mipmap/phone"
         android:drawablePadding="12dp"
         android:background="@drawable/line_et_bg"/>
@@ -54,6 +56,7 @@
         android:layout_marginTop="32dp"
         android:layout_marginLeft="32dp"
         android:layout_marginRight="32dp"
+        android:inputType="number"
         android:hint="请输入验证码"
         android:drawableLeft="@mipmap/pwd"
         android:drawablePadding="12dp"

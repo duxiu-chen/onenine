@@ -1,11 +1,14 @@
 package me.mucool.testapplication.ui.fragment;
 
 
+import android.graphics.drawable.AnimationDrawable;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -20,12 +23,9 @@ import com.ywl5320.listener.OnPreparedListener;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
-import butterknife.BindView;
-import cn.jpush.android.api.JPushInterface;
-import cn.jpush.android.api.TagAliasCallback;
 import me.mucool.testapplication.App;
 import me.mucool.testapplication.R;
 import me.mucool.testapplication.adapter.CallAdapter;
@@ -33,19 +33,21 @@ import me.mucool.testapplication.bean.BaseResponse;
 import me.mucool.testapplication.bean.CallResponse;
 import me.mucool.testapplication.mvp.contract.event.CallContract;
 import me.mucool.testapplication.mvp.presenter.event.CallPresenter;
-import me.mucool.testapplication.network.util.RetrofitUtil;
-import me.mucool.testapplication.ui.activity.ServiceRecordActivity;
+import me.mucool.testapplication.ui.activity.ServiceRecordFragment;
 import me.mucool.testapplication.ui.base.BaseActivity;
 import me.mucool.testapplication.ui.base.BaseFragment;
 import me.mucool.testapplication.utils.SharedPreferenceManager;
+import me.mucool.testapplication.utils.VoicePlay;
 
 /**
  * Created by mucool on 2019/12/12.
  */
 
-public class FinishedFragment extends BaseFragment implements CallContract.View, ServiceRecordActivity.UpdateNew {
+public class FinishedFragment extends BaseFragment implements CallContract.View, ServiceRecordFragment.UpdateNew {
 
-    WlMusic wlMusic = WlMusic.getInstance();
+    private List<CallResponse.DataBean> callList = new ArrayList<>();
+
+    MediaPlayer player;
 
     private RecyclerView recyclerView;
     private View emptyView;
@@ -58,6 +60,14 @@ public class FinishedFragment extends BaseFragment implements CallContract.View,
 
     private LinearLayoutManager linearLayoutManager;
 
+    private int position =-1;
+
+    private int intoFlag = 0;
+
+    private View curView =null;
+
+    private boolean firstClick = true;
+
     Handler handler = new Handler()
     {
         @Override
@@ -66,17 +76,36 @@ public class FinishedFragment extends BaseFragment implements CallContract.View,
             switch (msg.what)
             {
                 case 1:
-                    TimeBean timeBean = (TimeBean) msg.obj;
-                    View child = recyclerView.getChildAt(msg.arg1);
-                    if (child!=null){
-                        TextView textView = child.findViewById(R.id.tv_duration);
-                        if (textView!=null && timeBean.getCurrSecs()>0)
-                            textView.setText(callAdapter.getCourseTime(timeBean.getCurrSecs()));
+                    int timeBean = (int)msg.obj;
+                    if (curView!=null){
+                        TextView textView = curView.findViewById(R.id.tv_duration);
+                        ImageView img_band = curView.findViewById(R.id.img_band);
+                        if (textView!=null && timeBean>0)
+                            textView.setText(callAdapter.getCourseTime(timeBean));
+                        if (img_band!=null){
+                            AnimationDrawable animation = (AnimationDrawable)img_band.getBackground();
+                            if(!animation.isRunning())//是否正在运行？
+                            {
+                                animation.start();//启动
+                            }
+                        }
+
+
                     }
 
                     break;
                 case 2:
                     callAdapter.notifyDataSetChanged();
+                    if (curView!=null){
+                        ImageView img_band = curView.findViewById(R.id.img_band);
+                        AnimationDrawable animation = (AnimationDrawable)img_band.getBackground();
+                        animation.stop();//停止
+                    }
+                    if (state==1){
+                        showLoading();
+                        callPresenter.responseCall(position, Integer.valueOf(callList.get(position).getId()));
+                    }else
+                        position=-1;
                     break;
                 default:
                     break;
@@ -94,6 +123,32 @@ public class FinishedFragment extends BaseFragment implements CallContract.View,
     }
 
     @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if (isVisibleToUser && intoFlag >0){
+            showLoading();
+            position=-1;
+            callPresenter.getCallList(SharedPreferenceManager.getUserPhone(),state);
+            curView=null;
+        }
+
+        if (!isVisibleToUser){
+            position=-1;
+            if (handler!=null)
+                handler.removeCallbacks(runnable);
+            if (player!=null && player.isPlaying())
+                player.stop();
+            if (curView!=null){
+                ImageView img_band = curView.findViewById(R.id.img_band);
+                AnimationDrawable animation = (AnimationDrawable)img_band.getBackground();
+                animation.stop();//停止
+            }
+            curView=null;
+        }
+
+    }
+
+    @Override
     protected void initWidget(View root) {
         super.initWidget(root);
         emptyView = root.findViewById(R.id.empty_view);
@@ -107,19 +162,25 @@ public class FinishedFragment extends BaseFragment implements CallContract.View,
         if (null != getArguments()) {
             state = getArguments().getInt("state");
         }
+        player = VoicePlay.getInstance(mContext);
         linearLayoutManager = new LinearLayoutManager(getContext());
         linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         recyclerView.setLayoutManager(linearLayoutManager);
         callPresenter = new CallPresenter(this);
         showLoading();
         callPresenter.getCallList(SharedPreferenceManager.getUserPhone(),state);
-
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
+                position=-1;
+                if (player.isPlaying())
+                    player.stop();
+                player.reset();
+                handler.removeCallbacks(runnable);
                 callPresenter.getCallList(SharedPreferenceManager.getUserPhone(),state);
             }
         });
+        intoFlag++;
     }
 
     @Override
@@ -154,49 +215,74 @@ public class FinishedFragment extends BaseFragment implements CallContract.View,
             emptyView.setVisibility(View.VISIBLE);
             recyclerView.setVisibility(View.GONE);
         }else {
-            emptyView.setVisibility(View.GONE);
-            recyclerView.setVisibility(View.VISIBLE);
-            callAdapter = new CallAdapter(callResponseList.getData(), getContext());
-            recyclerView.setAdapter(callAdapter);
-            if (state==1)
-                callAdapter.setOnAdapterClickListener(new CallAdapter.AdapterClickListener() {
+
+            if (getContext()!=null){
+                callList = callResponseList.getData();
+                emptyView.setVisibility(View.GONE);
+                recyclerView.setVisibility(View.VISIBLE);
+                callAdapter = new CallAdapter(callResponseList.getData(), getContext());
+                recyclerView.setAdapter(callAdapter);
+                if (state==1 || state==3)
+                    callAdapter.setOnAdapterClickListener(new CallAdapter.AdapterClickListener() {
+                        @Override
+                        public void click(@NotNull String id) {
+                            showLoading();
+                            callPresenter.completeCall(SharedPreferenceManager.getUserPhone() ,Integer.valueOf(id));
+                        }
+                    });
+                callAdapter.notifyDataSetChanged();
+                callAdapter.setOnVoiceClickListener(new CallAdapter.VoiceClickListener() {
                     @Override
-                    public void click(@NotNull String id) {
-                        showLoading();
-                        callPresenter.completeCall(SharedPreferenceManager.getUserPhone() ,Integer.valueOf(id));
+                    public void clickVoice(final int pos, @NotNull String dataUrl, View itemView) {
+                        if (pos==position){
+
+                        }else {
+                            handler.removeCallbacks(runnable);
+                            if (curView!=null){
+                                ImageView img_band = curView.findViewById(R.id.img_band);
+                                AnimationDrawable animation = (AnimationDrawable)img_band.getBackground();
+                                if(animation.isRunning())//是否正在运行？
+                                {
+                                    animation.stop();//停止
+                                }
+                            }
+
+                            curView = itemView;
+                            position = pos;
+                            try {
+                                if (player.isPlaying())
+                                    player.stop();
+                                player.reset();
+                                player.setDataSource(dataUrl);
+                                player.prepare();
+                                player.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                                    @Override
+                                    public void onPrepared(MediaPlayer mp) {
+                                        handler.post(runnable);
+                                        player.start();//准备完成开始播放
+                                        if (curView!=null){
+                                            TextView textView = curView.findViewById(R.id.tv_duration);
+                                            textView.setText(callAdapter.getCourseTime(0));
+                                        }
+
+                                    }
+                                });
+                                player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                                    @Override
+                                    public void onCompletion(MediaPlayer mp) {
+                                        handler.removeCallbacks(runnable);
+                                        handler.sendEmptyMessage(2);
+                                    }
+                                });
+                            }catch (Exception e){
+                                e.printStackTrace();
+                            }
+
+                        }
+
                     }
                 });
-            callAdapter.setOnVoiceClickListener(new CallAdapter.VoiceClickListener() {
-                @Override
-                public void clickVoice(final int pos, @NotNull String dataUrl) {
-                    wlMusic.stop();
-                    wlMusic.setSource(dataUrl);
-                    wlMusic.prePared();
-                    wlMusic.setOnPreparedListener(new OnPreparedListener() {
-                        @Override
-                        public void onPrepared() {
-                            wlMusic.start(); //准备完成开始播放
-                        }
-                    });
-                    wlMusic.setOnInfoListener(new OnInfoListener() {
-                        @Override
-                        public void onInfo(TimeBean timeBean) {
-                            Log.e("timeBean", "curr:" + timeBean.getCurrSecs() + ", total:" + timeBean.getTotalSecs());
-                            Message message = Message.obtain();
-                            message.obj = timeBean;
-                            message.arg1 = pos;
-                            message.what = 1;
-                            handler.sendMessage(message);
-                        }
-                    });
-                    wlMusic.setOnCompleteListener(new OnCompleteListener() {
-                        @Override
-                        public void onComplete() {
-                            handler.sendEmptyMessage(2);
-                        }
-                    });
-                }
-            });
+            }
         }
 
         hideLoading();
@@ -213,6 +299,7 @@ public class FinishedFragment extends BaseFragment implements CallContract.View,
     @Override
     public void completeCallSuccess(BaseResponse baseResponse) {
         App.getContext().showMessage(baseResponse.getMsg());
+        hideLoading();
         callPresenter.getCallList(SharedPreferenceManager.getUserPhone(),state);
     }
 
@@ -223,20 +310,34 @@ public class FinishedFragment extends BaseFragment implements CallContract.View,
     }
 
     @Override
-    public void onStop() {
-        super.onStop();
-        wlMusic.stop();
+    public void responseCallSuccess(BaseResponse baseResponse, int pos) {
+        position=-1;
+        App.getContext().showMessage(baseResponse.getMsg());
+        callPresenter.getCallList(SharedPreferenceManager.getUserPhone(),state);
+    }
+
+    @Override
+    public void responseCallFail(String msg) {
+        hideLoading();
+        App.getContext().showMessage(msg);
     }
 
     @Override
     public void update() {
+        showLoading();
         callPresenter.getCallList(SharedPreferenceManager.getUserPhone(),state);
-
-        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                callPresenter.getCallList(SharedPreferenceManager.getUserPhone(),state);
-            }
-        });
     }
+
+    private Runnable runnable = new Runnable() {
+        @Override
+        public void run() {
+            Message message = Message.obtain();
+            message.what = 1;
+            message.obj = player.getCurrentPosition()/1000;
+            Log.e("Runnable","Runnable:"+player.getCurrentPosition()/1000);
+            handler.sendMessage(message);
+            handler.postDelayed(runnable, 500);
+        }
+    };
+
 }

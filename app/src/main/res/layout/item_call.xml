@@ -10,42 +10,63 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
         app:cardCornerRadius="10dp"
         app:cardElevation="0dp">
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
-            <TextView
-                android:id="@+id/tv_hallName"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="房间号 I 220"
-                android:textColor="#ff666666"
-                android:textSize="15sp"
-                android:layout_margin="16dp"/>
-
             <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:id="@+id/tv_hallName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="房间号 I 220"
+                    android:textColor="#ff666666"
+                    android:textSize="17sp"
+                    android:textStyle="bold"
+                    android:layout_margin="16dp"/>
+
+                <TextView
+                    android:id="@+id/call_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentRight="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginRight="16dp"
+                    android:textSize="13sp"/>
+
+            </RelativeLayout>
+
+
+            <LinearLayout
                 android:id="@+id/rl_voice"
                 android:layout_width="match_parent"
                 android:layout_height="44dp"
                 android:layout_marginLeft="16dp"
                 android:layout_marginRight="14dp"
-                android:background="@drawable/bg_voice_band">
+                android:background="@drawable/bg_voice_band"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
                 <ImageView
                     android:layout_width="18dp"
                     android:layout_height="18dp"
                     android:src="@mipmap/icon_play"
-                    android:layout_centerVertical="true"
                     android:layout_marginLeft="18dp"/>
 
                 <ImageView
-                    android:layout_width="wrap_content"
+                    android:id="@+id/img_band"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
                     android:layout_height="16dp"
-                    android:src="@mipmap/voice_band"
+                    android:background="@drawable/play_anim"
                     android:layout_centerInParent="true"
                     android:layout_marginLeft="18dp"
+                    android:layout_marginRight="12dp"
                     android:scaleType="fitXY"
                     android:adjustViewBounds="true"/>
 
@@ -56,19 +77,19 @@
                     android:text="00:22"
                     android:textColor="#ff5b9af7"
                     android:textSize="15sp"
-                    android:layout_centerVertical="true"
-                    android:layout_alignParentRight="true"
                     android:layout_marginRight="13dp"/>
 
-            </RelativeLayout>
+            </LinearLayout>
 
             <TextView
                 android:id="@+id/tv_state"
-                android:layout_width="70dp"
-                android:paddingLeft="8dp"
-                android:paddingRight="8dp"
-                android:layout_height="26dp"
-                android:text="完成呼叫"
+                android:layout_width="wrap_content"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:paddingTop="4dp"
+                android:paddingBottom="4dp"
+                android:layout_height="wrap_content"
+                android:text="完成服务"
                 android:gravity="center"
                 android:textColor="#ff5b9af7"
                 android:textSize="12sp"

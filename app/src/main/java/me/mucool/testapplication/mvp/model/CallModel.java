@@ -37,4 +37,15 @@ public class CallModel {
                 .subscribe(observer);
     }
 
+
+    public void responseCall(int id, Observer<BaseResponse> observer){
+        JsonObject json = new JsonObject();
+        json.addProperty("id",id);
+        RequestBody body = RequestBody.create(MediaType.parse("application/json"), json.toString());
+        eventService.responseCall(body)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(observer);
+    }
+
 }

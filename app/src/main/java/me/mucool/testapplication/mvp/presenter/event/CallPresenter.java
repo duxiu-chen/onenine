@@ -88,4 +88,39 @@ public class CallPresenter extends BasePresenter<CallContract.View> implements C
             }
         });
     }
+
+    @Override
+    public void responseCall(final int position, int id) {
+        eventModel.responseCall(id, new Observer<BaseResponse>() {
+            @Override
+            public void onSubscribe(Disposable d) {
+
+            }
+
+            @Override
+            public void onNext(BaseResponse baseResponse) {
+                if (!isViewAttach()) {
+                    return;
+                }
+                if (baseResponse.getSuccess()) {
+                    view.responseCallSuccess(baseResponse, position);
+                    return;
+                }
+                view.responseCallFail(baseResponse.getMsg());
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                if (!isViewAttach()) {
+                    return;
+                }
+                view.responseCallFail(e.getMessage());
+            }
+
+            @Override
+            public void onComplete() {
+
+            }
+        });
+    }
 }

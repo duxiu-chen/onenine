@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="300dp"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@color/white">
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:src="@drawable/custom"
+        android:adjustViewBounds="true"
+        android:scaleType="fitXY"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="为了确保能够收到消息，请将应用设置为自启动！"
+        android:gravity="center"
+        android:textColor="@color/black"
+        android:layout_margin="12dp"
+        android:textSize="14sp"/>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_gravity="center_horizontal">
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/app_btn_start"
+            android:layout_width="wrap_content"
+            android:layout_height="38dp"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp"
+            android:layout_gravity="center_horizontal"
+            android:text="确定"
+            android:textColor="@color/white"
+            android:background="@drawable/appcompat_buttom_shape"
+            android:layout_marginBottom="16dp"
+            android:layout_marginTop="8dp"/>
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/app_btn_cancel"
+            android:layout_width="wrap_content"
+            android:layout_height="38dp"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp"
+            android:layout_gravity="center_horizontal"
+            android:text="取消"
+            android:textColor="@color/white"
+            android:background="@drawable/appcompat_buttom_shape2"
+            android:layout_marginBottom="16dp"
+            android:layout_marginLeft="24dp"
+            android:layout_marginTop="8dp"/>
+
+    </LinearLayout>
+
+</LinearLayout>

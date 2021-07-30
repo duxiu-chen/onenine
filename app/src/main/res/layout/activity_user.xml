@@ -1,139 +1,185 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    android:orientation="vertical"
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:background="@color/white">
-    <com.google.android.material.appbar.AppBarLayout
-        android:layout_width="match_parent"
-        android:layout_height="56dp">
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-            <ImageView
-                android:id="@+id/img_back"
-                android:layout_width="56dp"
-                android:layout_height="56dp"
-                android:adjustViewBounds="true"
-                android:scaleType="centerCrop"
-                android:src="@drawable/ic_back"
-                android:padding="12dp"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/user_center"
-                android:layout_centerInParent="true"
-                android:textColor="@color/white"
-                android:textSize="18sp"/>
-        </RelativeLayout>
-    </com.google.android.material.appbar.AppBarLayout>
-
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <LinearLayout
+        android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:paddingLeft="16dp"
-        android:paddingTop="21dp"
-        android:paddingBottom="16dp"
-        android:gravity="center_vertical"
-        android:layout_gravity="center_horizontal"
         android:background="@color/gray">
-        <de.hdodenhof.circleimageview.CircleImageView
-            android:id="@+id/avatar"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:src="@mipmap/logo" />
+        <com.google.android.material.appbar.AppBarLayout
+            android:layout_width="match_parent"
+            android:layout_height="56dp">
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+                <ImageView
+                    android:id="@+id/img_back"
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    android:adjustViewBounds="true"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/ic_back"
+                    android:padding="12dp"
+                    android:visibility="gone"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/user_center"
+                    android:layout_centerInParent="true"
+                    android:textColor="@color/white"
+                    android:textSize="18sp"/>
+            </RelativeLayout>
+        </com.google.android.material.appbar.AppBarLayout>
 
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingLeft="16dp"
+            android:paddingTop="21dp"
+            android:paddingBottom="16dp"
+            android:gravity="center_vertical"
+            android:layout_gravity="center_horizontal">
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/avatar"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:src="@mipmap/logo" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_weight="1"
+                android:layout_marginLeft="16dp"
+                android:layout_marginRight="16dp">
+                <TextView
+                    android:id="@+id/tv_username"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/black"
+                    android:textStyle="bold"
+                    android:textSize="16sp"
+                    android:text="用户名"/>
+
+                <TextView
+                    android:id="@+id/tv_phone"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="手机号"
+                    android:layout_marginTop="6dp"/>
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:layout_weight="1"
-            android:layout_marginLeft="16dp"
-            android:layout_marginRight="16dp">
-            <TextView
-                android:id="@+id/tv_username"
-                android:layout_width="wrap_content"
+            android:background="@color/white">
+            <RelativeLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="@color/black"
-                android:textStyle="bold"
-                android:textSize="16dp"
-                android:text="用户名"/>
-
-            <TextView
-                android:id="@+id/tv_phone"
-                android:layout_width="wrap_content"
+                android:layout_marginLeft="16dp"
+                android:layout_marginTop="12dp"
+                android:layout_marginBottom="12dp"
+                android:gravity="center_vertical">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="语音推送"
+                    android:textSize="16sp"
+                    android:layout_marginLeft="24dp"/>
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/switcherPush"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentRight="true"
+                    android:layout_marginRight="56dp" />
+            </RelativeLayout>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="2px"
+                android:background="@color/gray"/>
+            <RelativeLayout
+                android:id="@+id/tvUpgrade"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="手机号"
-                android:layout_marginTop="4dp"/>
+                android:gravity="center_vertical"
+                android:layout_marginLeft="16dp"
+                android:layout_marginTop="12dp"
+                android:layout_marginBottom="12dp"
+                android:visibility="gone">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="检查更新"
+                    android:textSize="16sp"
+                    android:layout_marginLeft="24dp"/>
+                <TextView
+                    android:id="@+id/tv_version"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentRight="true"
+                    android:layout_marginRight="56dp"
+                    android:textStyle="bold"
+                    android:text=""/>
+            </RelativeLayout>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="2px"
+                android:background="@color/gray"/>
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:layout_marginLeft="16dp"
+                android:layout_marginTop="12dp"
+                android:layout_marginBottom="12dp">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="上       班"
+                    android:textSize="16sp"
+                    android:layout_marginLeft="24dp"/>
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/switcherWork"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentRight="true"
+                    android:layout_marginRight="56dp"/>
+            </RelativeLayout>
         </LinearLayout>
+
+        <TextView
+            android:id="@+id/btnExit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="退出"
+            android:textSize="16sp"
+            android:gravity="center"
+            android:background="@color/white"
+            android:textColor="#e05a5a"
+            android:layout_marginTop="16dp"
+            android:padding="12dp"/>
+
+
 
     </LinearLayout>
 
-
-    <RelativeLayout
-        android:layout_width="match_parent"
+    <TextView
+        android:id="@+id/tvMain"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="16dp"
-        android:layout_marginTop="16dp"
-        android:gravity="center_vertical">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="语音推送"
-            android:textSize="16sp"
-            android:layout_marginLeft="24dp"/>
-        <androidx.appcompat.widget.SwitchCompat
-            android:id="@+id/switcherPush"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:layout_marginRight="56dp"/>
-    </RelativeLayout>
+        android:textColor="@color/c18B6FF"
+        android:text="《服务协议》和《隐私政策》"
+        android:layout_marginBottom="@dimen/dp_12"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"/>
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:layout_marginLeft="16dp"
-        android:layout_marginTop="24dp">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="版本管理"
-            android:textSize="16sp"
-            android:layout_marginLeft="24dp"/>
-        <TextView
-            android:id="@+id/tv_version"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:layout_marginRight="56dp"
-            android:textStyle="bold"
-            android:text=""/>
-    </RelativeLayout>
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:layout_marginLeft="16dp"
-        android:layout_marginTop="24dp">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="上         班"
-            android:textSize="16sp"
-            android:layout_marginLeft="24dp"/>
-        <androidx.appcompat.widget.SwitchCompat
-            android:id="@+id/switcherWork"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:layout_marginRight="56dp"/>
-    </RelativeLayout>
-
-</LinearLayout>
+</RelativeLayout>

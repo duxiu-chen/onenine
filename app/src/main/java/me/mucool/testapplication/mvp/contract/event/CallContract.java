@@ -17,11 +17,17 @@ public interface CallContract {
         void completeCallSuccess(BaseResponse baseResponse);
 
         void completeCallFail(String msg);
+
+        void responseCallSuccess(BaseResponse baseResponse, int pos);
+
+        void responseCallFail(String msg);
+
     }
 
     interface Presenter extends IBasePresenter {
         void getCallList(String phoneNumber, int state);
         void completeCall(String phoneNumber, int id);
+        void responseCall(int position, int id);
     }
 
 }

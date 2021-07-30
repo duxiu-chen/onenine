@@ -1,6 +1,11 @@
 package me.mucool.testapplication.ui.activity;
 
 import android.Manifest;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
@@ -12,7 +17,9 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Base64;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -20,12 +27,16 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatButton;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 
 import com.bumptech.glide.Glide;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.luck.picture.lib.PictureSelector;
 import com.luck.picture.lib.config.PictureConfig;
 import com.luck.picture.lib.config.PictureMimeType;
@@ -35,20 +46,29 @@ import com.tencent.bugly.beta.Beta;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Map;
 
 import cn.jpush.android.api.JPushInterface;
 import de.hdodenhof.circleimageview.CircleImageView;
+import me.mucool.testapplication.App;
 import me.mucool.testapplication.R;
 import me.mucool.testapplication.bean.UserInfoResponse;
 import me.mucool.testapplication.mvp.contract.user.UserContract;
 import me.mucool.testapplication.mvp.presenter.user.UserPresenter;
-import me.mucool.testapplication.ui.base.BaseActivity;
+import me.mucool.testapplication.ui.base.BaseFragment;
+import me.mucool.testapplication.utils.BackgroundUtil;
+import me.mucool.testapplication.utils.GlideEngine;
+import me.mucool.testapplication.utils.MyObjectTypeAdaptor;
 import me.mucool.testapplication.utils.SharedPreferenceManager;
 
+import static android.content.Context.NOTIFICATION_SERVICE;
+import static android.content.Intent.ACTION_DELETE;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 
-public class UserActivity extends BaseActivity implements UserContract.View {
+public class UserFragment extends BaseFragment implements UserContract.View {
 
     UserPresenter userPresenter;
     private AlertDialog alertDialog;
@@ -62,20 +82,30 @@ public class UserActivity extends BaseActivity implements UserContract.View {
     private SwitchCompat switcherWork;
     private CircleImageView avatar;
 
+    private TextView btnExit;
+
     @Override
-    protected void onCreate(@Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        super.onCreateView(inflater, container, savedInstanceState);
+
         userInfoResponse = SharedPreferenceManager.getLoginResponse();
-        switcherPush = findViewById(R.id.switcherPush);
-        switcherWork = findViewById(R.id.switcherWork);
-        avatar = findViewById(R.id.avatar);
-        TextView tvVersion = findViewById(R.id.tv_version);
-        TextView tvUserName = findViewById(R.id.tv_username);
-        TextView tvPhone = findViewById(R.id.tv_phone);
-        findViewById(R.id.img_back).setOnClickListener(new View.OnClickListener() {
+        switcherPush = mRoot.findViewById(R.id.switcherPush);
+        switcherWork = mRoot.findViewById(R.id.switcherWork);
+        avatar = mRoot.findViewById(R.id.avatar);
+        btnExit = mRoot.findViewById(R.id.btnExit);
+        TextView tvVersion = mRoot.findViewById(R.id.tv_version);
+        TextView tvUserName = mRoot.findViewById(R.id.tv_username);
+        TextView tvPhone = mRoot.findViewById(R.id.tv_phone);
+        mRoot.findViewById(R.id.img_back).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                finish();
+                getActivity().finish();
+            }
+        });
+        mRoot.findViewById(R.id.tvMain).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(getActivity(), PrivacyActivity.class));
             }
         });
 
@@ -88,6 +118,13 @@ public class UserActivity extends BaseActivity implements UserContract.View {
         }
 
         userPresenter = new UserPresenter(this);
+
+        btnExit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                logout();
+            }
+        });
 
         switcherPush.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -107,16 +144,9 @@ public class UserActivity extends BaseActivity implements UserContract.View {
 
         //获取应用名和版本号
         try {
-            PackageManager packageManager = getPackageManager();
-            PackageInfo packageInfo = packageManager.getPackageInfo(getPackageName(), 0);
-            tvVersion.setText("V" + packageInfo.versionName + "." + packageInfo.versionCode);
-            tvVersion.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    /***** 检查更新 *****/
-                    Beta.checkUpgrade();
-                }
-            });
+            PackageManager packageManager = getContext().getPackageManager();
+            PackageInfo packageInfo = packageManager.getPackageInfo(getContext().getPackageName(), 0);
+            tvVersion.setText("v" + packageInfo.versionName);
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -128,6 +158,16 @@ public class UserActivity extends BaseActivity implements UserContract.View {
             }
         });
 
+        mRoot.findViewById(R.id.tvUpgrade).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                /***** 检查更新 *****/
+                Beta.checkUpgrade();
+            }
+        });
+
+
+        return super.onCreateView(inflater, container, savedInstanceState);
     }
 
     @Override
@@ -141,21 +181,21 @@ public class UserActivity extends BaseActivity implements UserContract.View {
         userInfoResponse.getData().setAvatar(url);
         SharedPreferenceManager.saveLoginResponse(userInfoResponse);
         Glide.with(this).load(url).into(avatar);
-        Toast.makeText(this, "更新头像成功", Toast.LENGTH_SHORT).show();
+        App.getContext().showMessage("更新头像成功");
     }
 
     @Override
     public void uploadAvatarFail(String msg) {
         closeWaitingDialog();
-        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+        App.getContext().showMessage(msg);
         if (msg == "token无效！") {
-            JPushInterface.deleteAlias(this, SharedPreferenceManager.getSequence());
+            JPushInterface.deleteAlias(mContext, SharedPreferenceManager.getSequence());
             SharedPreferenceManager.clearUserInfo();
-            Intent intent = new Intent(this, LoginActivity.class);
+            Intent intent = new Intent(getActivity(), LoginActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
-            finish();
+            getActivity().finish();
         }
     }
 
@@ -165,32 +205,32 @@ public class UserActivity extends BaseActivity implements UserContract.View {
         userInfoResponse.getData().setReceiveCall(switcherPush.isChecked()?1:0);
         userInfoResponse.getData().setWorkState(switcherWork.isChecked()?1:0);
         SharedPreferenceManager.saveLoginResponse(userInfoResponse);
-        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+        App.getContext().showMessage(msg);
         if (switcherWork.isChecked())
-            JPushInterface.resumePush(getApplicationContext());
+            JPushInterface.resumePush(mContext);
         else
-            JPushInterface.stopPush(getApplicationContext());
+            JPushInterface.stopPush(mContext);
     }
 
     @Override
     public void updateStatusFail(String msg) {
         closeWaitingDialog();
-        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+        App.getContext().showMessage(msg);
         if (msg == "token无效！") {
-            JPushInterface.deleteAlias(this, SharedPreferenceManager.getSequence());
+            JPushInterface.deleteAlias(mContext, SharedPreferenceManager.getSequence());
             SharedPreferenceManager.clearUserInfo();
-            Intent intent = new Intent(this, LoginActivity.class);
+            Intent intent = new Intent(getActivity(), LoginActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
-            finish();
+            getActivity().finish();
         }
     }
 
     private void checkAvatarPermission(){
-        if (ContextCompat.checkSelfPermission(UserActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE) != PERMISSION_GRANTED
-            && ContextCompat.checkSelfPermission(UserActivity.this, Manifest.permission.CAMERA) != PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(UserActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.CAMERA}, 1);
+        if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.READ_EXTERNAL_STORAGE) != PERMISSION_GRANTED
+            && ContextCompat.checkSelfPermission(mContext, Manifest.permission.CAMERA) != PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.CAMERA}, 1);
         }else {
             chooseImage();
         }
@@ -199,6 +239,7 @@ public class UserActivity extends BaseActivity implements UserContract.View {
     private void chooseImage(){
         PictureSelector.create(this)
                 .openGallery(PictureMimeType.ofImage())// 全部.PictureMimeType.ofAll()、图片.ofImage()、视频.ofVideo()、音频.ofAudio()
+                .imageEngine(GlideEngine.createGlideEngine())
                 .maxSelectNum(9)// 最大图片选择数量
                 .minSelectNum(1)// 最小选择数量
                 .imageSpanCount(4)// 每行显示个数
@@ -229,9 +270,9 @@ public class UserActivity extends BaseActivity implements UserContract.View {
                 if (grantResults[i] == PERMISSION_GRANTED) {//选择了“始终允许”
                     chooseImage();
                 } else {
-                    if (!ActivityCompat.shouldShowRequestPermissionRationale(this, permissions[i])){//用户选择了禁止不再询问
+                    if (!ActivityCompat.shouldShowRequestPermissionRationale(getActivity(), permissions[i])){//用户选择了禁止不再询问
 
-                        AlertDialog.Builder builder = new AlertDialog.Builder(UserActivity.this);
+                        AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
                         builder.setTitle("获取权限")
                                 .setMessage("点击允许读取存储权限才可以修改头像")
                                 .setPositiveButton("去允许", new DialogInterface.OnClickListener() {
@@ -240,7 +281,7 @@ public class UserActivity extends BaseActivity implements UserContract.View {
                                             mDialog.dismiss();
                                         }
                                         Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                                        Uri uri = Uri.fromParts("package", getPackageName(), null);//注意就是"package",不用改成自己的包名
+                                        Uri uri = Uri.fromParts("package", mContext.getPackageName(), null);//注意就是"package",不用改成自己的包名
                                         intent.setData(uri);
                                         startActivityForResult(intent, NOT_NOTICE);
                                     }
@@ -249,7 +290,7 @@ public class UserActivity extends BaseActivity implements UserContract.View {
                         mDialog.setCanceledOnTouchOutside(false);
                         mDialog.show();
                     }else {//选择禁止
-                        AlertDialog.Builder builder = new AlertDialog.Builder(UserActivity.this);
+                        AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
                         builder.setTitle("permission")
                                 .setMessage("点击允许才可以使用我们的app哦")
                                 .setPositiveButton("去允许", new DialogInterface.OnClickListener() {
@@ -257,7 +298,7 @@ public class UserActivity extends BaseActivity implements UserContract.View {
                                         if (alertDialog != null && alertDialog.isShowing()) {
                                             alertDialog.dismiss();
                                         }
-                                        ActivityCompat.requestPermissions(UserActivity.this,
+                                        ActivityCompat.requestPermissions(getActivity(),
                                                 new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.CAMERA}, 1);
                                     }
                                 });
@@ -271,9 +312,9 @@ public class UserActivity extends BaseActivity implements UserContract.View {
         }
     }
 
+
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(requestCode==NOT_NOTICE){
             checkAvatarPermission();//由于不知道是否选择了允许所以需要再次判断
         }
@@ -313,6 +354,9 @@ public class UserActivity extends BaseActivity implements UserContract.View {
             } else if (filePath.contains(".jpg")) {
                 filePath = filePath.substring(0, filePath.indexOf(".jpg"));
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+            } else if(filePath.contains(".jpeg")){
+                filePath = filePath.substring(0, filePath.indexOf(".jpeg"));
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
             }
         }
 
@@ -326,6 +370,27 @@ public class UserActivity extends BaseActivity implements UserContract.View {
         String base64String = Base64.encodeToString(byteServer, 0, byteServer.length, Base64.NO_WRAP);
         Log.e("dataBase64", base64String);
         return base64String;
+    }
+
+    private void logout(){
+        new AlertDialog.Builder(mContext).setMessage("确定退出登陆？").setNegativeButton("取消", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+            }
+        }).setPositiveButton("确定", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                JPushInterface.deleteAlias(mContext, SharedPreferenceManager.getSequence());
+                //JPushInterface.cleanTags(this, SharedPreferenceManager.getSequence())
+                SharedPreferenceManager.clearUserInfo();
+                Intent intent = new Intent(getActivity(), LoginActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+                getActivity().finish();
+            }
+        }).show();
     }
 
 }

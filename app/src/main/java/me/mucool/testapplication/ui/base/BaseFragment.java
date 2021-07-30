@@ -1,8 +1,11 @@
 package me.mucool.testapplication.ui.base;
 
+import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,6 +24,8 @@ public abstract class BaseFragment extends Fragment {
     protected View mRoot;
     protected Bundle mBundle;
     protected LayoutInflater mInflater;
+
+    protected ProgressDialog progressDialog;
 
     protected boolean mIsDestroy;
     Unbinder unbinder;
@@ -100,6 +105,48 @@ public abstract class BaseFragment extends Fragment {
         }
         mBundle = null;
         super.onDestroy();
+    }
+
+    public void showWaitingDialog(String msg, boolean cancelable) {
+        showLoadingDialogInternal(msg, cancelable, null);
+    }
+
+    protected void showLoadingDialogInternal(final CharSequence msg, boolean cancelable,
+                                             @Nullable DialogInterface.OnCancelListener cancelListener) {
+        if (progressDialog == null) {
+            progressDialog = new ProgressDialog(mContext);
+            progressDialog.setCancelable(cancelable);
+            progressDialog.setMessage(msg);
+        }
+        baseHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    boolean isDestroyed = getActivity().isFinishing();
+                    if (!isDestroyed)
+                        progressDialog.show();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
+    public void closeWaitingDialog() {
+        Log.d("dialog", getClass() + " closeWaitingDialog ====== " + progressDialog);
+        baseHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                if (progressDialog != null) {
+                    try {
+                        progressDialog.dismiss();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    progressDialog = null;
+                }
+            }
+        });
     }
 
 

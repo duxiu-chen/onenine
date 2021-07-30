@@ -38,12 +38,6 @@ public class App extends Application {
             StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
             StrictMode.setVmPolicy(builder.build());
         }
-
-        Bugly.init(getApplicationContext(), "0b7b28eb56", false);
-
-        JPushInterface.setDebugMode(true);
-        JPushInterface.init(this);
-
     }
 
     @Override

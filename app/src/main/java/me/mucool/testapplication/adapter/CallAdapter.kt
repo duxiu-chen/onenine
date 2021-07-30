@@ -3,13 +3,14 @@ package me.mucool.testapplication.adapter
 import android.content.Context
 import android.graphics.Color
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.item_call.view.*
 import me.mucool.testapplication.R
 import me.mucool.testapplication.bean.CallResponse
 
-class CallAdapter constructor(private val datas: List<CallResponse.DataBean>, private val context: Context): RecyclerView.Adapter<CallAdapter.CallViewHolder>() {
+class CallAdapter constructor(private val datas: List<CallResponse.DataBean>, private val context: Context?): RecyclerView.Adapter<CallAdapter.CallViewHolder>() {
 
     public var clickPos :Int = -1
 
@@ -25,15 +26,20 @@ class CallAdapter constructor(private val datas: List<CallResponse.DataBean>, pr
         holder.bind(datas[position], position)
     }
 
+    override fun getItemViewType(position: Int): Int {
+        return position
+    }
+
 
     inner class CallViewHolder(parent: ViewGroup): RecyclerView.ViewHolder(
             LayoutInflater.from(parent.context).inflate(R.layout.item_call, parent, false)){
 
         fun bind(callBean: CallResponse.DataBean, pos: Int) {
-            itemView.tv_hallName.text = "${callBean.hallName} - ${callBean.hallRoomName}"
+            itemView.tv_hallName.text = "${callBean.hallRoomName}"
             itemView.tv_duration.text = "${getCourseTime(callBean.duration)}"
-            if (callBean.state == 1){
-                itemView.tv_state.text = "完成呼叫"
+            itemView.call_time.text = "${callBean.createDate}"
+            if (callBean.state == 1 || callBean.state==3){
+                itemView.tv_state.text = "完成服务"
                 itemView.tv_state.setBackgroundResource(R.drawable.btn_out_line2)
                 itemView.tv_state.setTextColor(Color.parseColor("#e05a5a"))
                 itemView.tv_state.setOnClickListener {
@@ -48,7 +54,7 @@ class CallAdapter constructor(private val datas: List<CallResponse.DataBean>, pr
             itemView.rl_voice.setOnClickListener {
                 notifyDataSetChanged()
                 if (voiceClickListener!=null)
-                    voiceClickListener.clickVoice(pos, callBean.voicePath)
+                    voiceClickListener.clickVoice(pos, callBean.voicePath, itemView)
             }
         }
     }
@@ -69,7 +75,7 @@ class CallAdapter constructor(private val datas: List<CallResponse.DataBean>, pr
     }
 
     interface VoiceClickListener{
-        fun clickVoice(pos:Int, dataUrl: String)
+        fun clickVoice(pos:Int, dataUrl: String, item: View)
     }
 
     fun updateTime(){

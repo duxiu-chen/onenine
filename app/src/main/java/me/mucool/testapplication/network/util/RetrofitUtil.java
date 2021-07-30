@@ -12,7 +12,7 @@ import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 
 public class RetrofitUtil {
 
-    public static String BASE_URL = "http://47.110.49.157:8090/";
+    public static String BASE_URL = "https://yaojiu.majiangyun.com/";
 
     private static final int DEFAULT_TIMEOUT = 60;
 
