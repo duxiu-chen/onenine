@@ -164,8 +164,8 @@ class ServiceRecordFragment : BaseFragment(), UserInfoContract.View {
     override fun getUserInfoSuccess(userInfoResponse: UserInfoResponse?) {
         SharedPreferenceManager.saveLoginResponse(userInfoResponse)
         tvTitle.text = userInfoResponse!!.data.mahjongHall.name
-        if (SharedPreferenceManager.getLoginResponse().data.workState == 0)
-            JPushInterface.stopPush(mContext)
+        //if (SharedPreferenceManager.getLoginResponse().data.workState == 0)
+        //    JPushInterface.stopPush(mContext)
     }
 
     override fun getUserInfoFail(msg: String?) {
@@ -195,8 +195,7 @@ class ServiceRecordFragment : BaseFragment(), UserInfoContract.View {
     override fun onDestroy() {
         super.onDestroy()
         context?.unregisterReceiver(mBroadcastReceiver)
-        VoicePlay.getInstance(mContext).stop()
-        VoicePlay.getInstance(mContext).release()
+        VoicePlay.release()
     }
 
 }

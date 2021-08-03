@@ -25,4 +25,12 @@ public class VoicePlay {
         return player;
     }
 
+
+    public static void release(){
+        if (player != null){
+            player.release();
+            player = null;
+        }
+    }
+
 }

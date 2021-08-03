@@ -5,10 +5,12 @@ import android.os.Bundle
 import android.view.MenuItem
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
+import cn.jpush.android.api.JPushInterface
 import kotlinx.android.synthetic.main.acitvity_main.*
 import kotlinx.android.synthetic.main.activity_service_record.*
 import me.mucool.testapplication.R
 import me.mucool.testapplication.ui.base.BaseActivity
+import me.mucool.testapplication.utils.SharedPreferenceManager
 
 
 class MainActivity : BaseActivity() {
@@ -42,6 +44,11 @@ class MainActivity : BaseActivity() {
                 }
             }
             return@setOnNavigationItemSelectedListener true
+        }
+
+        if(SharedPreferenceManager.getLoginResponse()!=null){
+            var state = SharedPreferenceManager.getLoginResponse().data.workState
+            if (state == 1) JPushInterface.resumePush(this) else JPushInterface.stopPush(this)
         }
     }
 
